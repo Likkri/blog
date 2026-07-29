@@ -15,6 +15,20 @@
 - Web 工程：Astro 内容建模、静态生成、搜索与部署。
 - 开源协作：从最小复现到高质量 issue 和可审查 PR。
 
+## 可复用工具
+
+仓库包含一个只依赖 Python 标准库的网站健康检查 CLI：
+
+```bash
+python3 tools/site_health_check.py https://qinkening.me \
+  --contains "覃科宁的博客" \
+  --retries 2 \
+  --json
+```
+
+它会检查状态码、响应内容、延迟和最终跳转地址，并通过退出码接入 cron、
+launchd 或 CI。完整说明见 [`tools/README.md`](tools/README.md)。
+
 ## 本地开发
 
 需要 Node.js 20+ 与 pnpm 9+：
@@ -41,6 +55,7 @@ src/content/spec/       关于页面
 src/content/posts/      Markdown 文章
 src/assets/             由构建器处理的资源
 public/                 原样复制的静态资源
+tools/                  可单独复用的运维工具与测试
 ```
 
 ## 内容许可与主题来源
