@@ -1,27 +1,27 @@
 # 关于我
 
-你好！我是覃科宁，一名全栈开发者和 AI 探索者。
+你好，我是覃科宁，目前 Base 广西南宁。
 
-## 技术栈
+我从材料科学与工程出发，逐渐把兴趣延伸到软件工程、AI 应用和开源协作。相比追逐每一个新名词，我更喜欢把模糊的问题拆成可以验证的小步骤：先做出能运行的版本，再补文档、测试和维护路径。
 
-- **前端**: React, Vue, TypeScript, Tailwind CSS
-- **后端**: Python, Node.js, Go
-- **AI**: LLM 应用开发, RAG, Agent
-- **工具**: Astro, Docker, GitHub Actions
+## 我在做什么
+
+- **AI 工程**：探索大语言模型、检索增强、Agent 与真实工作流的结合。
+- **全栈开发**：使用 TypeScript、React/Astro、Node.js 和 Python 构建小而完整的产品。
+- **个人基础设施**：维护博客、域名、自动部署、Cloudflare Tunnel 与本机服务。
+- **开源协作**：从复现问题、补充文档和小型修复开始，持续建立可信的公开作品。
+
+## 关于表达
+
+我也在慢慢寻找一种更接近内心、却不急着被标签定义的表达方式。对名字、外观与生活路径，我相信每个人都应该拥有从容选择的空间。这里更愿意记录变化本身，而不是用一句结论概括一个人。
 
 ## 这个博客
 
-这个博客使用 [Astro](https://astro.build/) + [Fuwari](https://github.com/saicaca/fuwari) 构建，部署在 GitHub Pages 上。
+博客使用 [Astro](https://astro.build/) 与 [Fuwari](https://github.com/saicaca/fuwari) 构建，目前运行在我自己的 Mac 上，通过 Cloudflare Tunnel 对外提供 HTTPS 访问。这里的文章尽量来自真实完成过的项目，包含背景、取舍、命令、验证方式和复盘。
 
-我在这里分享技术文章、开发经验和 AI 探索心得。
-
-## 联系我
+## 联系与合作
 
 - GitHub: [Likkri](https://github.com/Likkri)
-- 邮箱: 8888Iyou@proton.me
+- Email: [8888iyou@proton.me](mailto:8888iyou@proton.me)
 
-## 支持我
-
-如果我的文章对你有帮助，欢迎请我喝杯咖啡 ☕
-
-你的支持是我持续创作的动力！
+如果你在做 AI 应用、开发者工具、开源文档或小型产品，欢迎带着具体问题来交流。比起一句“有空合作”，我更喜欢一个清晰的 issue、一份最小复现，或者一段可以一起改进的代码。

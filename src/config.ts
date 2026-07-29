@@ -9,7 +9,7 @@ import { LinkPreset } from "./types/config";
 
 export const siteConfig: SiteConfig = {
         title: "覃科宁的博客",
-        subtitle: "同济大学 · 材料科学与工程 · AI探索者",
+        subtitle: "广西南宁 · 材料科学与工程 · AI 工程实践",
         lang: "zh_CN",
         themeColor: {
                 hue: 200,
@@ -53,9 +53,9 @@ export const navBarConfig: NavBarConfig = {
 };
 
 export const profileConfig: ProfileConfig = {
-        avatar: "assets/images/demo-avatar.png",
+        avatar: "/images/avatar.png",
         name: "覃科宁",
-        bio: "同济大学材料科学与工程学士 | AI创业探索者 | 全栈开发者",
+        bio: "Base 广西南宁｜材料科学与工程｜AI 应用与全栈开发",
         links: [
                 {
                         name: "GitHub",

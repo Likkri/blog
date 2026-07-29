@@ -1,286 +1,123 @@
 ---
-title: "Python 自动化实战：10个让你效率翻倍的脚本"
-published: 2026-04-17
-description: "分享10个实用的 Python 自动化脚本，涵盖文件处理、网页抓取、Excel 操作等日常场景"
-tags: ["Python", "自动化", "效率"]
-image: ""
-category: "技术"
+title: "用 Python 写一个不轻易误报的网站健康检查"
+published: 2026-07-27
+description: "从状态码、超时、重试到结构化日志，写一个适合个人站点的最小健康检查脚本。"
+tags: ["Python", "可观测性", "运维"]
+category: "工程实践"
 ---
-# Python 自动化实战：10个让你效率翻倍的脚本
 
-Python 不只是用来写 Web 应用和数据分析的。在日常工作中，很多重复性任务都可以用 Python 脚本自动化。
+# 一个健康检查脚本需要回答什么
 
-这里分享 10 个我常用的自动化脚本，每个都能在 5 分钟内用起来。
+个人网站上线后，最常见的监控方式是定时请求首页，只要返回 `200` 就认为正常。但首页可能被 CDN 缓存，源站已经离线；也可能首页正常，分页或搜索资源却损坏。
 
-## 1. 批量重命名文件
+一个够用的最小检查器至少要回答：
 
-```python
-import os
-from pathlib import Path
+- DNS 与 TLS 是否能建立连接？
+- 关键页面是否返回预期状态码？
+- 请求是否在合理时间内完成？
+- 短暂抖动是否会被误判成故障？
+- 失败记录能否交给其他工具继续处理？
 
-def batch_rename(directory, pattern, replacement):
-    """批量重命名文件"""
-    for filepath in Path(directory).glob(pattern):
-        new_name = filepath.name.replace(old_text, new_text)
-        filepath.rename(filepath.parent / new_name)
+## 检查多个用户路径
 
-# 使用：把所有 .txt 文件中的 "old" 替换为 "new"
-batch_rename("./documents", "*.txt", "old", "new")
-```
-
-## 2. 自动整理下载文件夹
+下面的脚本只使用 Python 标准库，检查首页、第二页、归档和搜索页。每个地址最多尝试三次，并输出一行 JSON，方便后续接入日志工具。
 
 ```python
-import shutil
-from pathlib import Path
+from __future__ import annotations
 
-def organize_downloads(download_dir):
-    """按文件类型整理下载文件夹"""
-    categories = {
-        "图片": [".jpg", ".jpeg", ".png", ".gif", ".webp"],
-        "文档": [".pdf", ".doc", ".docx", ".txt", ".md"],
-        "视频": [".mp4", ".mkv", ".avi", ".mov"],
-        "压缩包": [".zip", ".rar", ".7z", ".tar.gz"],
-        "代码": [".py", ".js", ".ts", ".html", ".css"],
-    }
-    
-    for file in Path(download_dir).iterdir():
-        if not file.is_file():
-            continue
-        for category, extensions in categories.items():
-            if file.suffix.lower() in extensions:
-                dest = Path(download_dir) / category
-                dest.mkdir(exist_ok=True)
-                shutil.move(str(file), dest / file.name)
-                break
-
-organize_downloads("~/Downloads")
-```
-
-## 3. Excel 数据处理
-
-```python
-import openpyxl
-
-def merge_excel_files(file_paths, output_path):
-    """合并多个 Excel 文件"""
-    merged = openpyxl.Workbook()
-    merged.remove(merged.active)
-    
-    for path in file_paths:
-        wb = openpyxl.load_workbook(path)
-        for sheet_name in wb.sheetnames:
-            sheet = wb[sheet_name]
-            new_sheet = merged.create_sheet(sheet_name)
-            for row in sheet.iter_rows(values_only=True):
-                new_sheet.append(row)
-    
-    merged.save(output_path)
-
-merge_excel_files(["data1.xlsx", "data2.xlsx"], "merged.xlsx")
-```
-
-## 4. 网页内容抓取
-
-```python
-import requests
-from bs4 import BeautifulSoup
-
-def scrape_article(url):
-    """抓取网页文章内容"""
-    resp = requests.get(url, headers={"User-Agent": "Mozilla/5.0"})
-    soup = BeautifulSoup(resp.text, "html.parser")
-    
-    # 提取标题
-    title = soup.find("h1").get_text(strip=True)
-    
-    # 提取正文
-    paragraphs = [p.get_text(strip=True) for p in soup.find_all("p")]
-    content = "\n\n".join(paragraphs)
-    
-    return title, content
-
-title, content = scrape_article("https://example.com/article")
-print(f"标题: {title}")
-print(f"内容: {content[:200]}...")
-```
-
-## 5. 自动发送邮件
-
-```python
-import smtplib
-from email.mime.text import MIMEText
-
-def send_email(subject, body, to_addr):
-    """发送邮件（需配置 SMTP）"""
-    msg = MIMEText(body, "plain", "utf-8")
-    msg["Subject"] = subject
-    msg["From"] = "your@email.com"
-    msg["To"] = to_addr
-    
-    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-        server.login("your@email.com", "app_password")
-        server.send_message(msg)
-
-send_email("日报", "今天完成了XX功能...", "boss@company.com")
-```
-
-## 6. 图片批量压缩
-
-```python
-from PIL import Image
-from pathlib import Path
-
-def compress_images(directory, quality=85, max_size=1920):
-    """批量压缩图片"""
-    for img_path in Path(directory).rglob("*.[jp][pn]g"):
-        img = Image.open(img_path)
-        
-        # 等比缩放
-        if max(img.size) > max_size:
-            img.thumbnail((max_size, max_size))
-        
-        # 压缩保存
-        img.save(img_path, quality=quality, optimize=True)
-        print(f"压缩: {img_path.name}")
-
-compress_images("./images")
-```
-
-## 7. 自动备份文件
-
-```python
-import shutil
-from datetime import datetime
-from pathlib import Path
-
-def backup_files(source, backup_dir):
-    """自动备份文件到带日期的文件夹"""
-    date_str = datetime.now().strftime("%Y%m%d_%H%M%S")
-    dest = Path(backup_dir) / f"backup_{date_str}"
-    dest.mkdir(parents=True, exist_ok=True)
-    
-    for item in Path(source).rglob("*"):
-        if item.is_file():
-            rel_path = item.relative_to(source)
-            target = dest / rel_path
-            target.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(item, target)
-    
-    print(f"备份完成: {dest}")
-
-backup_files("./important_files", "./backups")
-```
-
-## 8. 监控网站状态
-
-```python
-import requests
-import time
-
-def monitor_website(url, check_interval=60):
-    """监控网站可用性"""
-    while True:
-        try:
-            resp = requests.get(url, timeout=10)
-            status = "✅ 正常" if resp.status_code == 200 else f"⚠️ 异常 ({resp.status_code})"
-        except Exception as e:
-            status = f"❌ 无法访问: {e}"
-        
-        print(f"[{time.strftime('%H:%M:%S')}] {url} - {status}")
-        time.sleep(check_interval)
-
-monitor_website("https://your-website.com")
-```
-
-## 9. JSON 数据处理
-
-```python
 import json
-from pathlib import Path
+import time
+from dataclasses import asdict, dataclass
+from datetime import datetime, timezone
+from urllib.error import HTTPError, URLError
+from urllib.request import Request, urlopen
 
-def process_json_files(directory, key_to_extract):
-    """从多个 JSON 文件中提取特定字段"""
-    results = []
-    for json_file in Path(directory).glob("*.json"):
-        data = json.loads(json_file.read_text())
-        if key_to_extract in data:
-            results.append({
-                "file": json_file.name,
-                "value": data[key_to_extract]
-            })
-    
-    # 输出为新的 JSON 文件
-    Path(directory / "extracted.json").write_text(
-        json.dumps(results, ensure_ascii=False, indent=2)
-    )
-    return results
 
-process_json_files("./data", "username")
-```
-
-## 10. 自动生成日报
-
-```python
-from datetime import datetime, timedelta
-
-def generate_daily_report(tasks):
-    """生成工作日报"""
-    date = datetime.now().strftime("%Y年%m月%d日")
-    
-    report = f"""# 工作日报 - {date}
-
-## 今日完成
-"""
-    for i, task in enumerate(tasks, 1):
-        report += f"{i}. {task}\n"
-    
-    report += f"""
-## 明日计划
-1. （待填写）
-
-## 备注
-无
-"""
-    return report
-
-tasks = [
-    "完成用户登录模块开发",
-    "修复订单列表分页 bug",
-    "参加项目周会",
-    "代码审查 3 个 PR",
+URLS = [
+    "https://qinkening.me/",
+    "https://qinkening.me/page/2/",
+    "https://qinkening.me/archive/",
+    "https://qinkening.me/search/",
 ]
 
-report = generate_daily_report(tasks)
-print(report)
+
+@dataclass
+class Result:
+    url: str
+    ok: bool
+    status: int | None
+    elapsed_ms: int
+    error: str | None
+
+
+def check(url: str, attempts: int = 3, timeout: float = 8.0) -> Result:
+    last_error: str | None = None
+    started = time.perf_counter()
+
+    for attempt in range(1, attempts + 1):
+        try:
+            request = Request(
+                url,
+                headers={"User-Agent": "qinkening-healthcheck/1.0"},
+                method="GET",
+            )
+            with urlopen(request, timeout=timeout) as response:
+                status = response.status
+                response.read(256)
+                elapsed = int((time.perf_counter() - started) * 1000)
+                return Result(url, status == 200, status, elapsed, None)
+        except HTTPError as exc:
+            last_error = f"HTTP {exc.code}"
+        except URLError as exc:
+            last_error = str(exc.reason)
+        except TimeoutError:
+            last_error = "timeout"
+
+        if attempt < attempts:
+            time.sleep(attempt)
+
+    elapsed = int((time.perf_counter() - started) * 1000)
+    return Result(url, False, None, elapsed, last_error)
+
+
+def main() -> int:
+    results = [check(url) for url in URLS]
+    event = {
+        "checked_at": datetime.now(timezone.utc).isoformat(),
+        "ok": all(item.ok for item in results),
+        "results": [asdict(item) for item in results],
+    }
+    print(json.dumps(event, ensure_ascii=False))
+    return 0 if event["ok"] else 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
 ```
 
-## 进阶：用 cron 定时执行
+## 为什么读取少量响应体
 
-在 Linux/Mac 上，用 `crontab -e` 添加定时任务：
+只发 `HEAD` 请求很省流量，但有些应用没有正确实现 `HEAD`，或者 CDN 对 `HEAD` 与 `GET` 使用不同缓存策略。这里发送 `GET`，只读取前 256 字节，兼顾兼容性和资源消耗。
 
-```bash
-# 每天早上 9 点自动整理下载文件夹
-0 9 * * * python3 /path/to/organize_downloads.py
+如果需要更强验证，可以检查页面中是否包含稳定标记，例如站点标题。但不要依赖经常变化的完整文案，否则每次更新内容都会触发误报。
 
-# 每小时检查网站状态
-0 * * * * python3 /path/to/monitor_website.py
+## 重试不是无限等待
 
-# 每天晚上 10 点自动备份
-0 22 * * * python3 /path/to/backup_files.py
-```
+重试能过滤瞬时网络抖动，也会推迟真正故障的发现。脚本采用递增等待：第一次失败后等一秒，第二次后等两秒。每个请求仍然有独立超时，避免任务永久卡住。
 
-## 总结
+对于个人博客，三次尝试通常足够；支付或认证系统需要更严格的分层监控，不能直接套用这个参数。
 
-这些脚本都很简单，但能帮你省下大量重复劳动的时间。关键是**识别哪些任务是重复性的**，然后用脚本自动化。
+## CDN 正常不等于源站正常
 
-Python 的优势在于：
-- 语法简洁，学习成本低
-- 标准库丰富，不需要装太多第三方包
-- 生态完善，几乎什么都能做
+如果页面被 CDN 缓存，即使本机源站离线，公开 URL 仍可能暂时返回 `200`。我会额外做两种检查：
 
-**记住：程序员的价值不在于写代码，而在于用代码解决问题。**
+1. 请求带随机查询参数的页面，降低命中旧缓存的概率；
+2. 查看本机 HTTP 日志，确认请求确实到达源站。
 
----
+监控的目标不是制造一个绿色图标，而是尽量准确地描述系统状态。
 
-*你有其他想自动化的场景？欢迎留言讨论。*
+## 定时执行
+
+macOS 上可以用 LaunchAgent 定时运行，Linux 上可以用 systemd timer。无论选择哪一种，都应保留标准输出和错误日志，并确保脚本返回非零退出码时能被观察到。
+
+下一步可以把失败事件发送到邮件、Webhook 或消息机器人，但通知通道应该与被监控服务分离：如果网站和通知都依赖同一台电脑，断电时你不会收到任何消息。

@@ -7,6 +7,7 @@
     "start": "astro dev",
     "check": "astro check",
     "build": "astro build && pagefind --site dist",
+    "deploy:local": "zsh scripts/deploy-local.sh",
     "preview": "astro preview",
     "astro": "astro",
     "type-check": "tsc --noEmit --isolatedDeclarations",

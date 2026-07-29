@@ -1,220 +1,112 @@
 ---
-title: "从零搭建个人博客：Astro + Fuwari 完整教程"
-published: 2026-04-17
-description: "手把手教你用 Astro 和 Fuwari 主题搭建一个漂亮的个人博客，免费部署到 GitHub Pages"
-tags: ["Astro", "博客", "教程"]
-image: ""
-category: "教程"
----
-# 从零搭建个人博客：Astro + Fuwari 完整教程
-
-想要一个自己的博客？不想花钱买服务器？这篇文章教你从零开始，30分钟搞定。
-
-## 为什么选 Astro + Fuwari？
-
-**Astro** 是目前最火的静态网站框架之一：
-- 构建速度极快（纯静态 HTML）
-- 支持 MDX、Vue、React 等组件
-- SEO 友好
-- 零 JavaScript 默认加载
-
-**Fuwari** 是一个精美的 Astro 博客主题：
-- GitHub 4400+ Stars
-- 支持亮色/暗色主题
-- 内置标签、分类、搜索
-- 响应式设计，手机端也很好看
-
-## 第一步：准备工作
-
-你需要：
-- 一个 [GitHub](https://github.com) 账号
-- 安装 [Node.js](https://nodejs.org/)（18+）
-- 安装 [pnpm](https://pnpm.io/)
-
-```bash
-# 安装 pnpm
-npm install -g pnpm
-```
-
-## 第二步：创建项目
-
-```bash
-# 克隆 Fuwari 模板
-git clone https://github.com/saicaca/fuwari.git my-blog
-cd my-blog
-
-# 安装依赖
-pnpm install
-```
-
-## 第三步：个性化配置
-
-编辑 `src/config.ts`，修改以下内容：
-
-```typescript
-const siteConfig = {
-  title: "你的名字的博客",
-  subtitle: "你的副标题",
-  author: "你的名字",
-  avatar: "/images/avatar.png",  // 头像
-  language: "zh-CN",  // 中文
-  // ...
-};
-```
-
-### 添加社交链接
-
-```typescript
-const navBarConfig = {
-  links: [
-    { name: "GitHub", url: "https://github.com/yourname" },
-    { name: "掘金", url: "https://juejin.cn/user/yourid" },
-  ],
-};
-```
-
-### 修改个人信息
-
-```typescript
-const profileConfig = {
-  name: "你的名字",
-  bio: "一句话介绍自己",
-  avatar: "/images/avatar.png",
-};
-```
-
-## 第四步：写文章
-
-在 `src/content/posts/` 目录下创建 `.md` 文件：
-
-```markdown
----
-title: "我的第一篇文章"
-published: 2026-04-17
-description: "文章简介"
-tags: ["标签1", "标签2"]
+title: "从主题外壳到内容系统：我如何整理 Astro 博客"
+published: 2026-07-28
+description: "围绕内容模型、站点配置、搜索和构建验证，记录一次把模板博客变成可长期维护站点的过程。"
+tags: ["Astro", "内容工程", "静态网站"]
+category: "Web 工程"
 ---
 
-# 标题
+# 从主题外壳到内容系统
 
-文章内容...
+拿到一个成熟博客主题后，最快的做法是改名字、换头像、发布几篇文章。但如果内容和配置没有形成稳定结构，网站很快会再次变成难以维护的展示壳。
+
+这次整理博客，我把目标从“页面看起来完整”改成了“新增一篇文章时，不需要重新理解整个项目”。
+
+## 先确定内容入口
+
+这个站点使用 Astro Content Collections。文章集中在：
+
+```text
+src/content/posts/
 ```
 
-## 第五步：本地预览
+站点介绍与个人资料分别位于：
 
-```bash
-pnpm dev
+```text
+src/content/spec/about.md
+src/config.ts
 ```
 
-打开 `http://localhost:4321` 预览效果。
+把内容入口压缩到少数固定位置很重要。否则名字在配置文件、侧边栏组件、页面标题和 README 中各出现一次，修改地域或简介时就容易遗漏。
 
-## 第六步：部署到 GitHub Pages
+## 用 Schema 保护文章元数据
 
-### 1. 创建 GitHub 仓库
-
-在 GitHub 上创建一个名为 `你的用户名.github.io` 的仓库，或者任意名称的仓库。
-
-### 2. 推送代码
-
-```bash
-git remote add origin https://github.com/yourname/yourrepo.git
-git branch -M main
-git push -u origin main
-```
-
-### 3. 配置 GitHub Actions
-
-创建 `.github/workflows/deploy.yml`：
+文章头部的 Frontmatter 不只是展示信息，也是构建阶段的输入：
 
 ```yaml
-name: Deploy to GitHub Pages
-
-on:
-  push:
-    branches: [main]
-
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: pnpm
-      - run: pnpm install
-      - run: pnpm build
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: dist
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - uses: actions/deploy-pages@v4
+---
+title: "文章标题"
+published: 2026-07-28
+description: "一句能够独立说明文章价值的摘要"
+tags: ["Astro", "工程实践"]
+category: "Web 工程"
+draft: false
+---
 ```
 
-### 4. 启用 GitHub Pages
+Schema 会验证标题、日期、标签等字段。它不能判断文章是否有价值，却能防止日期格式错误、字段类型不一致等低级问题进入生产环境。
 
-在仓库 Settings → Pages 中，Source 选择 "GitHub Actions"。
+## 摘要不是标题的重复
 
-推送代码后，几分钟内你的博客就会上线！
+我给摘要设了三个要求：
 
-## 进阶优化
+1. 离开标题后仍能独立成立。
+2. 说明文章解决的具体问题。
+3. 不使用“完全指南”“效率十倍”之类无法证明的承诺。
 
-### 自定义域名
+搜索结果和社交分享通常先显示摘要。如果它只是把标题换一种说法，读者依然不知道文章是否值得打开。
 
-1. 买一个域名（推荐 Namesilo、Cloudflare）
-2. 在仓库 Settings → Pages → Custom domain 中填写
-3. 在域名 DNS 中添加 CNAME 记录指向 `你的用户名.github.io`
+## 把真实项目拆成内容
 
-### 添加评论系统
+与其批量生成宽泛教程，我更倾向于从一个真实项目拆出不同角度：
 
-推荐 [Giscus](https://giscus.app/)（基于 GitHub Discussions），免费且无广告。
+- 架构：为什么选择静态站点与 Tunnel。
+- 运维：如何设置登录自启动与查看日志。
+- 开发：怎样组织内容、执行构建与搜索索引。
+- 复盘：遇到的 DNS、TLS、缓存和睡眠问题。
 
-### 添加搜索
+这种拆分方式能让文章互相引用，同时避免每篇都从“什么是 Astro”讲起。
 
-Fuwari 内置了 Pagefind 搜索，构建时自动生成索引。
+## 构建是内容审核的一部分
 
-### SEO 优化
+我使用下面两条命令作为最低门槛：
 
-- 确保每篇文章都有 `description`
-- 使用合适的 `tags` 和 `category`
-- 在 `astro.config.mjs` 中设置正确的 `site` URL
-- 添加 `robots.txt` 和 `sitemap`（Astro 的 sitemap 插件会自动生成）
+```bash
+pnpm check
+pnpm build
+```
 
-## 常见问题
+`check` 发现类型与 Astro 模板问题，`build` 生成静态文件并建立 Pagefind 搜索索引。构建成功后还要抽查：
 
-**Q: 构建报错怎么办？**
-A: 检查 Node.js 版本是否 >= 18，删除 `node_modules` 重新 `pnpm install`。
+- 首页能否展示最新文章；
+- 归档中的日期和分类是否正确；
+- 搜索能否命中文章正文；
+- About、RSS、sitemap 和 404 页面是否存在；
+- 内部链接是否使用正确的尾斜杠。
 
-**Q: 图片怎么放？**
-A: 放在 `public/images/` 目录下，引用时用 `/images/xxx.png`。
+## 自定义域名最容易遗漏的配置
 
-**Q: 怎么修改主题颜色？**
-A: 编辑 `src/styles/global.css` 中的 CSS 变量。
+站点生成绝对链接时依赖 `astro.config.mjs` 中的 `site`。如果仓库模板仍指向 GitHub Pages 地址，RSS、sitemap 或分享链接就可能继续生成旧域名。
 
-## 总结
+```ts
+export default defineConfig({
+  site: "https://qinkening.me",
+  base: "/",
+  trailingSlash: "always",
+});
+```
 
-用 Astro + Fuwari 搭建博客的优势：
-- ✅ 完全免费
-- ✅ 速度快（纯静态）
-- ✅ SEO 友好
-- ✅ 自动部署
-- ✅ 主题美观
+`base` 和 `trailingSlash` 需要与实际部署方式一致。静态服务器对 `/posts/example/` 和 `/posts/example` 的处理不一定相同，发布前应测试真实 URL，而不是只看开发服务器。
 
-30分钟，从零到上线，就是这么简单。
+## 一个长期可维护的标准
 
----
+我希望以后新增文章时只需要：
 
-*有问题？欢迎在评论区留言，我会一一解答。*
+1. 在固定目录创建 Markdown；
+2. 写完整 Frontmatter；
+3. 本地预览；
+4. 执行检查与构建；
+5. 同步 `dist/` 到运行目录；
+6. 从公网抽查页面。
+
+当流程可以被写成六个稳定步骤，主题才真正变成了内容系统。
